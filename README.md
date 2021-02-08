@@ -12,3 +12,10 @@ Some goals of this website are:
 - Secure as possible. Hardened by some guideliness.
 - Decentralized as possible.
 - Free Open Source (FOSS).
+
+Resources used:
+- https://stackoverflow.com/questions/56995924/how-to-setup-nginx-for-ipfs-gateway
+- http://blog.klaehn.org/2018/06/08/running-ipfs-gateway/
+- https://www.cyberciti.biz/faq/redirect-nginx-non-www-to-www-domain-over-ssl/
+- https://beaglesecurity.com/blog/article/nginx-server-security.html
+- https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04
