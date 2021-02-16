@@ -13,7 +13,7 @@
 	<meta property="og:image" content="https://www.jurjendevries.com/assets/images/Jurjen-de-Vries-Muse-Google-Glass-1200x630-open-graph.jpg">
 	<link rel="icon" href="assets/icons/favicon.svg">
 	
-	<style type="text/css">
+	<style>
 		body{
 			margin: 0;
 			padding: 0;
@@ -134,7 +134,7 @@
 		.header_txt{
 			padding: 0 8px;
 		}
-		.header_txt h1{
+		.header_txt h1, .typewrite{
 			font-size:2.1rem;
 			text-align: center;
 			font-weight: 200;
@@ -142,23 +142,28 @@
 		.header_txt hr{
 			width: 50px;
 			height: 5px;
-			background-color: #e9e9e9;
+			background-color: transparent;
 			border: none;
 		}
-
-		.typewrite{
+		.typewrite-container{
 			text-align: center;
-			color: orange;
+		}
+		.typewrite{
+			font-size:2.1rem;
+			text-align: center;
+			font-weight: 200;
+			color: #000;
+			margin-top: 50px;
 			text-decoration: none;
 		}
 		.wrap{
-		   border-right: 5px solid orange;
+		   border-right: 5px solid #000;
 		   animation: blink 400ms; 
 		   animation-iteration-count: infinite;
 		}
 		@keyframes blink {
 		  from, to { border-color: transparent }
-		  50% { border-color: orange; }
+		  50% { border-color: #000; }
 		}
 
 		.icons-container{
@@ -178,47 +183,47 @@
 
 
 		@media only screen and (max-width: 1699.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.9rem;
 			}
 		}
 		@media only screen and (max-width: 1549.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.75rem;
 			}
 		}
 		@media only screen and (max-width: 1439.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.7rem;
 			}
 		}
 		@media only screen and (max-width: 1198.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.65rem;
 			}
 		}
 		@media only screen and (max-width: 1149.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.6rem;
 			}
 		}
 		@media only screen and (max-width: 1049.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.52rem;
 			}
 		}
 		@media only screen and (max-width: 991.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.6rem;
 			}
 		}
 		@media only screen and (max-width: 899.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.48rem;
 			}
 		}
 		@media only screen and (max-width: 849.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.4rem;
 			}
 		}
@@ -232,7 +237,7 @@
 			}
 		}
 		@media only screen and (max-width: 767.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				margin: 15px auto;
 			}
 			.image-container{
@@ -253,7 +258,7 @@
 			}
 		}
 		@media only screen and (max-width: 767.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.6rem;
 			}
 			.image-container{
@@ -272,7 +277,7 @@
 			}
 		}
 		@media only screen and (max-width: 575.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.5rem;
 			}
 			.icons{
@@ -286,12 +291,12 @@
 			}
 		}
 		@media only screen and (max-width: 375.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.4rem;
 			}
 		}
 		@media only screen and (max-width: 319.98px) {
-			.header_txt h1{
+			.header_txt h1, .typewrite{
 				font-size: 1.2rem;
 			}
 		}
@@ -349,12 +354,12 @@
 		}
 	</script>
 
-	<script type="text/javascript">
+	<script>
 		var TxtType = function(el, toRotate, period) {
 	        this.toRotate = toRotate;
 	        this.el = el;
 	        this.loopNum = 0;
-	        this.period = parseInt(period, 10) || 800;
+	        this.period = parseInt(period, .5) || 10;
 	        this.txt = '';
 	        this.tick();
 	        this.isDeleting = false;
@@ -373,9 +378,9 @@
 	        this.el.innerHTML = '<span class="wrap">'+this.txt+'</span>';
 
 	        var that = this;
-	        var delta = 40;
+	        var delta = 25;
 
-	        if (this.isDeleting) { delta *= 1.5; }
+	        if (this.isDeleting) { delta *= 0.85; }
 
 	        if (!this.isDeleting && this.txt === fullTxt) {
 	        delta = this.period;
@@ -383,7 +388,7 @@
 	        } else if (this.isDeleting && this.txt === '') {
 	        this.isDeleting = false;
 	        this.loopNum++;
-	        delta = 500;
+	        delta = 50;
 	        }
 
 	        setTimeout(function() {
@@ -400,7 +405,6 @@
 	              new TxtType(elements[i], JSON.parse(toRotate), period);
 	            }
 	        }
-	        // INJECT CSS
 	        var css = document.createElement("style");
 	        css.type = "text/css";
 	        document.body.appendChild(css);
@@ -419,12 +423,10 @@
 				<div class="icon-wrapper">
 					<div class="header_txt">
 						<h1>Hey :-) Let's keep in touch</h1>
-						<hr/>
-						<h1>
-						  <a href="" class="typewrite" data-period="1200" data-type='[ "Future technology", "Changing society", "Social capital", "Sharing Economy", "Virtual Reality", "3D printing", "Robotics", "Blockchain", "Internet of Things" ]'>
-						    <span class="wrap"></span>	
-						  </a>
-						</h1>
+						<hr>
+						<div class="typewrite-container">
+							<a href="" class="typewrite" data-period="1200" data-type='[ "Future technology", "Changing society", "Social capital", "Sharing Economy", "Virtual Reality", "3D printing", "Robotics", "Blockchain", "Internet of Things" ]'><span class="wrap"></span></a>
+						</div>
 
 					</div>
 					
