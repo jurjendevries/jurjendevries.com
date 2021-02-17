@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Jurjen de Vries</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="keywords" content="Jurjen, Jurjen-de-Vries, Public-Speaker, Mentor, technology, future-technology, social, changing-society, network, community" />
+	<meta name="description" content="Jurjen de Vries is a Public Speaker & Mentor about future technology and changing society" />
+	<meta name="author" content="Jurjen de Vries">
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="Jurjen de Vries">
+	<meta property="og:description" content="Jurjen de Vries is a Public Speaker &amp; Mentor about future technology and changing society">
+	<meta property="og:image" content="https://www.jurjendevries.com/assets/images/Jurjen-de-Vries-Muse-Google-Glass-1200x630-open-graph.jpg">
+	<link rel="icon" href="assets/icons/favicon.svg">
+	
+	<style>
+		body{
+			margin: 0;
+			padding: 0;
+			font-family: Verdana;
+			height: 100vh;
+			overflow: hidden;
+		}
+
+		/*-------grid class-start------*/
+
+		.container-fluid{
+		  width: 100%;
+		  padding: 0;
+		  margin:0;
+		}
+		.row {
+		  display: -ms-flexbox;
+		  display: flex;
+		  -ms-flex-wrap: wrap;
+		  flex-wrap: wrap;
+		  margin-right: -15px;
+		  margin-left: -15px;
+		}
+		.no-gutters {
+		  margin-right: 0;
+		  margin-left: 0;
+		}
+		.no-gutters > .col,
+		.no-gutters > [class*="col-"] {
+		  padding-right: 0;
+		  padding-left: 0;
+		}
+
+		.col-12, .col-md-5, .col-md-7, .col-lg-4, .col-lg-8, .col-xl-3, .col-xl-9{
+		  position: relative;
+		  width: 100%;
+		  padding-right: 15px;
+		  padding-left: 15px;
+		}
+		.col-12 {
+		  -ms-flex: 0 0 100%;
+		  flex: 0 0 100%;
+		  max-width: 100%;
+		}
+		@media (min-width: 768px) {
+		  .col-md-5 {
+		    -ms-flex: 0 0 41.666667%;
+		    flex: 0 0 41.666667%;
+		    max-width: 41.666667%;
+		  }
+		  .col-md-7 {
+		    -ms-flex: 0 0 58.333333%;
+		    flex: 0 0 58.333333%;
+		    max-width: 58.333333%;
+		  }
+		}
+
+		@media (min-width: 992px) {
+		  .col-lg-4 {
+		    -ms-flex: 0 0 35%;
+		    flex: 0 0 35%;
+		    max-width: 35%;
+		  }
+		  .col-lg-8 {
+		    -ms-flex: 0 0 65%;
+		    flex: 0 0 65%;
+		    max-width: 65%;
+		  }
+		}
+
+		@media (min-width: 1200px) {
+		  .col-xl-3 {
+		    -ms-flex: 0 0 32%;
+		    flex: 0 0 32%;
+		    max-width: 32%;
+		  }
+		  .col-xl-9 {
+		    -ms-flex: 0 0 68%;
+		    flex: 0 0 68%;
+		    max-width: 68%;
+		  }
+		}
+		@media (min-width: 1400px) {
+		  .col-xl-3 {
+		    -ms-flex: 0 0 28%;
+		    flex: 0 0 28%;
+		    max-width: 28%;
+		  }
+		  .col-xl-9 {
+		    -ms-flex: 0 0 72%;
+		    flex: 0 0 72%;
+		    max-width: 72%;
+		  }
+		}
+		/*-------grid class-end------*/
+
+
+		.image-container{
+			overflow: hidden;
+			width: 100%;
+			height: 100%;
+		}
+		.header-img{
+			background: url(assets/images/Jurjen-de-Vries-Muse-Google-Glass.jpg) no-repeat center;
+			background-size: cover;
+			filter: brightness(0.85);
+			width: 100%;
+			height: 100%;
+		}
+		.icon-sec{
+			margin-top: 15%;
+			text-align: center;
+		}
+		.icon-wrapper{
+			padding-top:10%;
+			margin-top:20%
+		}
+		.header_txt{
+			padding: 0 8px;
+		}
+		.header_txt h1, .typewrite{
+			font-size:2.1rem;
+			text-align: center;
+			font-weight: 200;
+		}
+		.header_txt hr{
+			width: 50px;
+			height: 5px;
+			background-color: transparent;
+			border: none;
+		}
+		.typewrite-container{
+			text-align: center;
+		}
+		.typewrite{
+			font-size:2.1rem;
+			text-align: center;
+			font-weight: 200;
+			color: #000;
+			margin-top: 50px;
+			text-decoration: none;
+		}
+		.wrap{
+		   border-right: 5px solid #000;
+		   animation: blink 400ms; 
+		   animation-iteration-count: infinite;
+		}
+		@keyframes blink {
+		  from, to { border-color: transparent }
+		  50% { border-color: #000; }
+		}
+
+		.icons-container{
+			display:inline-flex;
+			text-align: center;
+			justify-content: center;
+			align-items: center;
+		}
+		.icons{
+			height: 35px;
+			margin: 2px;
+			transition: .5s;
+		}
+		.icons:hover{
+			transform: scale(1.2);
+		}
+
+
+		@media only screen and (max-width: 1699.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.9rem;
+			}
+		}
+		@media only screen and (max-width: 1549.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.75rem;
+			}
+		}
+		@media only screen and (max-width: 1439.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.7rem;
+			}
+		}
+		@media only screen and (max-width: 1198.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.65rem;
+			}
+		}
+		@media only screen and (max-width: 1149.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.6rem;
+			}
+		}
+		@media only screen and (max-width: 1049.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.52rem;
+			}
+		}
+		@media only screen and (max-width: 991.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.6rem;
+			}
+		}
+		@media only screen and (max-width: 899.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.48rem;
+			}
+		}
+		@media only screen and (max-width: 849.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.4rem;
+			}
+		}
+
+		@media only screen and (min-width: 768px) {
+			.image-container{
+				height: 100vh;
+			}
+			.icon-wrapper{
+				height: 100vh;
+			}
+		}
+		@media only screen and (max-width: 767.98px) {
+			.header_txt h1, .typewrite{
+				margin: 15px auto;
+			}
+			.image-container{
+				height: 70vh;
+			}
+			.icons{
+				height: 30px;
+				margin: 5px;
+			}
+			.icon-wrapper{
+				height: 30vh;
+				padding:2%;
+				margin: 0;
+			}
+			.icon-sec{
+				margin: 0;
+				padding:5% 0;
+			}
+		}
+		@media only screen and (max-width: 767.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.6rem;
+			}
+			.image-container{
+				height: 70vh;
+			}
+			.icons{
+				height: 30px;
+				margin: 5px;
+			}
+			.icon-wrapper{
+				height: 30vh;
+				margin: 0;
+			}
+			.icon-sec{
+				padding:5% 0;
+			}
+		}
+		@media only screen and (max-width: 575.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.5rem;
+			}
+			.icons{
+				height: 25px;
+			}
+			.icon-wrapper{
+				padding:10px;
+			}
+			.icon-sec{
+				padding:2%;
+			}
+		}
+		@media only screen and (max-width: 375.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.4rem;
+			}
+		}
+		@media only screen and (max-width: 319.98px) {
+			.header_txt h1, .typewrite{
+				font-size: 1.2rem;
+			}
+		}
+	</style>
+	<script type="application/ld+json">
+		{
+		  "@context": "https://schema.org/",
+		  "@type": "Person",
+		  "name": "Jurjen de Vries",
+		  "alternateName": "Jur",
+		  "givenName": "Jurjen",
+		  "familyName": "de Vries",
+		  "url": "https://www.jurjendevries.com",
+		  "email": "mailto:jurjen@jurjendevries.com",
+		  "telephone": "+31650495866",
+		  "gender": "https://schema.org/Male",
+		  "image": "https://www.jurjendevries.com/assets/images/Jurjen-de-Vries-caricature-general-2013-500x500px.jpg",
+		  "sameAs": [
+		    "https://www.jurjendevries.com/",
+		    "https://twitter.com/jurjendevries/",
+		    "https://www.facebook.com/jurjen.vries/",
+		    "https://www.linkedin.com/in/jurjendevries/",
+		    "https://www.youtube.com/channel/UCCkETT-wBe2On277AQEI9AA",
+		    "https://nl.pinterest.com/jurjendevries/",
+		    "https://www.instagram.com/jurjendevries79/",
+		    "https://github.com/jurjendevries/",
+		    "https://soundcloud.com/jurjendevries/",
+		    "https://peepeth.com/jurjendevries",
+		    "https://mastodon.technology/@jurjendevries",
+		    "https://join.status.im/u/0x04ba212755d6efa720bea543c45483a9dad4205e20233361cdac21517ede9cab023e5e2690d0f068a6300ca392a4024aa32470bb7df130d442070aede5d90152ab",
+		    "https://www.3box.io/0x7f26f12aa83798209e979af9ed1387dea76eac6b/details",
+		    "https://keybase.io/jurjendevries",
+		    "https://www.slideshare.net/jurjendevries",
+		    "https://www.meetup.com/members/5904588/",
+		    "https://foursquare.com/jurjendevries",
+		    "https://www.last.fm/user/jurjendevries",
+		    "https://www.imdb.com/user/ur18757394/",
+		    "https://www.drupal.org/u/jurjen-de-vries",
+		    "https://androidworld.nl/user/Jurjen%20de%20Vries",
+		    "https://magazine.seats2meet.com/author/jurjen-de-vries/",
+		    "https://www.marketingfacts.nl/profiel/3983"
+		  ],
+		  "jobTitle": "Owner",
+		  "birthDate": "1979-09-13",
+		  "birthPlace": "IJsselstein, The Netherlands",
+		  "spouse": "Gabriella de Groot",
+		  "sibling": [
+		     "Sam de Vries",
+		     "Ian de Vries"
+		  ],
+		  "worksFor": {
+		    "@type": "Organization",
+		    "name": "jurjendevries.com"
+		  }  
+		}
+	</script>
+
+	<script>
+		var TxtType = function(el, toRotate, period) {
+	        this.toRotate = toRotate;
+	        this.el = el;
+	        this.loopNum = 0;
+	        this.period = parseInt(period, .5) || 10;
+	        this.txt = '';
+	        this.tick();
+	        this.isDeleting = false;
+	    };
+
+	    TxtType.prototype.tick = function() {
+	        var i = this.loopNum % this.toRotate.length;
+	        var fullTxt = this.toRotate[i];
+
+	        if (this.isDeleting) {
+	        this.txt = fullTxt.substring(0, this.txt.length - 1);
+	        } else {
+	        this.txt = fullTxt.substring(0, this.txt.length + 1);
+	        }
+
+	        this.el.innerHTML = '<span class="wrap">'+this.txt+'</span>';
+
+	        var that = this;
+	        var delta = 25;
+
+	        if (this.isDeleting) { delta *= 0.85; }
+
+	        if (!this.isDeleting && this.txt === fullTxt) {
+	        delta = this.period;
+	        this.isDeleting = true;
+	        } else if (this.isDeleting && this.txt === '') {
+	        this.isDeleting = false;
+	        this.loopNum++;
+	        delta = 50;
+	        }
+
+	        setTimeout(function() {
+	        that.tick();
+	        }, delta);
+	    };
+
+	    window.onload = function() {
+	        var elements = document.getElementsByClassName('typewrite');
+	        for (var i=0; i<elements.length; i++) {
+	            var toRotate = elements[i].getAttribute('data-type');
+	            var period = elements[i].getAttribute('data-period');
+	            if (toRotate) {
+	              new TxtType(elements[i], JSON.parse(toRotate), period);
+	            }
+	        }
+	        var css = document.createElement("style");
+	        css.type = "text/css";
+	        document.body.appendChild(css);
+	    };
+	</script>
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="row no-gutters">
+			<div class="col-12 col-md-7 col-lg-8 col-xl-9">
+				<div class="image-container">
+					<div class="header-img"></div>
+				</div>
+			</div>
+			<div class="col-12 col-md-5 col-lg-4 col-xl-3">
+				<div class="icon-wrapper">
+					<div class="header_txt">
+						<h1>Hey :-) Let's keep in touch</h1>
+						<hr>
+						<div class="typewrite-container">
+							<a href="" class="typewrite" data-period="1200" data-type='[ "Future technology", "Changing society", "Social capital", "Sharing Economy", "Virtual Reality", "3D printing", "Robotics", "Blockchain", "Internet of Things" ]'><span class="wrap"></span></a>
+						</div>
+
+					</div>
+					
+					<div class="icon-sec">
+						<div class="icons-container">
+							<a href="mailto:jurjen@jurjendevries.com"><img class="icons" src="assets/icons/message.svg" alt="mailto"></a>
+						</div>
+						<div class="icons-container">
+							<a href="https://www.linkedin.com/in/jurjendevries"><img class="icons" src="assets/icons/linkedin.svg" alt="linkedin"></a>
+						</div>
+						<div class="icons-container">
+							<a href="tel:+31650495866"><img class="icons" src="assets/icons/signal.svg" alt="signal"></a>
+						</div>
+						<div class="icons-container">
+							<a href="https://peepeth.com/jurjendevries"><img class="icons" src="assets/icons/peepeth.svg" alt="peepeth"></a>
+						</div>
+						<div class="icons-container">
+							<a href="https://mastodon.technology/@jurjendevries"><img class="icons" src="assets/icons/mastodon.svg" alt="mastodon"></a>
+						</div>
+						<div class="icons-container">
+							<a href="https://join.status.im/u/0x04ba212755d6efa720bea543c45483a9dad4205e20233361cdac21517ede9cab023e5e2690d0f068a6300ca392a4024aa32470bb7df130d442070aede5d90152ab">
+								<img class="icons" src="assets/icons/status.svg" alt="status">
+							</a>
+						</div>
+						<div class="icons-container">
+							<a href="https://www.3box.io/0x7f26f12aa83798209e979af9ed1387dea76eac6b/details"><img class="icons" src="assets/icons/3box.svg" alt="3box"></a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</body>
+</html>

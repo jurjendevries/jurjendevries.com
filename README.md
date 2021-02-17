@@ -19,3 +19,5 @@ Resources used:
 - https://www.cyberciti.biz/faq/redirect-nginx-non-www-to-www-domain-over-ssl/
 - https://beaglesecurity.com/blog/article/nginx-server-security.html
 - https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04
+- https://github.com/TheDiscordian/ipfs-sync
+- https://github.com/olipo186/Git-Auto-Deploy
