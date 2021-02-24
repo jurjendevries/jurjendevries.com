@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: *?
+Sitemap: https://jurjendevries.com/sitemap.xml
