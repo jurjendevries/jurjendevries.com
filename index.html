@@ -66,7 +66,6 @@
 
 		.image-card {
 			max-height: calc(70vh / 3 - var(--image-grid-gap) * 2 / 1.5 - var(--container-padding) * 2 / 9);
-			aspect-ratio: 1 / 1;
 		  transition: .35s;
 		  filter: brightness(85%);
 
@@ -124,7 +123,16 @@
 
 		@media only screen and (max-width: 767.98px) {
 			.col-1{
-				max-height: 70vh;
+				height: calc(70vh - var(--image-grid-gap) * 3 / 1.5 - var(--container-padding) * 3 / 9);
+			}
+		}
+
+		@media only screen and (max-width: 429.98px) {
+			.col-1{
+				height: calc(
+					(100vw - var(--image-grid-gap) * 2 - var(--container-padding) * 2) / 3
+					* 3 + var(--image-grid-gap) * 2 + var(--container-padding)
+				);
 			}
 		}
 
@@ -145,7 +153,9 @@
 			}
 
 			.image-card {
+				height: fit-content;
 				max-height: calc(100vh / 3 - var(--image-grid-gap) * 2 / 1.5 - var(--container-padding) * 2 / 9);
+				aspect-ratio: 1 / 1;
 			}
 
 			.content-container {
