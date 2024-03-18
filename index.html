@@ -143,8 +143,11 @@
 
 			.col-1{
 				justify-content: start;
-				width: fit-content;
 				max-width: calc(60% - var(--section-grid-gap) / 2 );
+				width: calc(
+					(100vh - var(--image-grid-gap) * 2)  / 3 
+					* 3 + var(--image-grid-gap) * 2 - var(--container-padding) * 3
+				) ;
 				height: 100%;
 			}
 
