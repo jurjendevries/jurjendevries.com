@@ -1,0 +1,4 @@
+{"status":"OK","tag":"payRequest","commentAllowed":255,"callback":"https://getalby.com/lnurlp/jurjendevries/callback","metadata":"[[\"text
+/identifier\",\"jurjendevries@getalby.com\"],[\"text/plain\",\"Sats for Jurjen\"]]","minSendable":1000,"maxSendable":10000000000,"payerDat
+a":{"name":{"mandatory":false},"email":{"mandatory":false},"pubkey":{"mandatory":false}},"nostrPubkey":"79f00d3f5a19ec806189fcab03c1be4ff8
+1d18ee4f653c88fac41fe03570f432","allowsNostr":true}
