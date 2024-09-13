@@ -48,6 +48,7 @@ MIT License
             flex-direction: row;
             align-items: flex-start;
             margin-top: 20px;
+            position: relative;
         }
 
         /* Canvas Styling */
@@ -146,6 +147,8 @@ MIT License
             }
         }
     </style>
+    <!-- Include Nostr Tools UMD Build -->
+    <script src="https://unpkg.com/nostr-tools@1.1.1/dist/nostr-tools.umd.min.js"></script>
 </head>
 <body>
     <header>
@@ -170,9 +173,9 @@ MIT License
             <!-- Nostr Login Button -->
             <button id="nostr-login-btn">Login with Nostr</button>
         </div>
+        <!-- Pause Overlay -->
+        <div id="pause-overlay">PAUSED</div>
     </div>
-    <!-- Pause Overlay -->
-    <div id="pause-overlay">PAUSED</div>
     <!-- Mobile Controls -->
     <div class="controls">
         <button id="left-btn">◀️</button>
@@ -181,10 +184,9 @@ MIT License
         <button id="down-btn">🔽</button>
         <button id="pause-btn">⏸️</button>
     </div>
-    <!-- Script as Module -->
-    <script type="module">
-        // Import Nostr Tools from unpkg as ES Module
-        import { relayInit, getEventHash, signEvent } from 'https://unpkg.com/nostr-tools@1.0.0/dist/nostr-tools.esm.min.js';
+    <script>
+        // Access NostrTools from the global object
+        const { relayInit, getEventHash, signEvent } = window.NostrTools;
 
         // Define top 5 Nostr relays
         const relays = [
@@ -293,7 +295,7 @@ MIT License
                 content: JSON.stringify({ name: profileName }),
             };
             event.id = getEventHash(event);
-            event.sig = await window.nostr.signEvent(event);
+            event.sig = await signEvent(event);
 
             // Publish the event to all connected relays
             for (const relay of relayPool) {
@@ -318,7 +320,7 @@ MIT License
 
         // Adjusted dropInterval to be dynamic based on speedLevel
         let dropCounter = 0;
-        let dropIntervalBase = 1000; // Base interval in ms
+        const dropIntervalBase = 1000; // Base interval in ms
 
         function update(time = 0) {
             if (!isPaused) {
