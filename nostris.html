@@ -190,17 +190,17 @@ MIT License
     <script>
         const { SimplePool, nip19 } = window.NostrTools;
 
-        const pool = new SimplePool()
+        const pool = new SimplePool();
         const relays = [
             'wss://relay.damus.io',
             'wss://relay.nostr.info',
             'wss://nostr-pub.wellorder.net',
             'wss://relay.snort.social',
             'wss://nostr-relay.wlvs.space'
-        ]
+        ];
 
-        let publicKey = null
-        let profileName = null
+        let publicKey = null;
+        let profileName = null;
 
         // Login with Nostr
         async function loginWithNostr() {
@@ -227,7 +227,7 @@ MIT License
             const events = await pool.list(relays, [{
                 kinds: [0],
                 authors: [publicKey],
-            }])
+            }]);
 
             for (const event of events) {
                 try {
@@ -585,7 +585,7 @@ MIT License
             const events = await pool.list(relays, [{
                 kinds: [30023],
                 '#tetris-high-score': [],
-            }])
+            }]);
 
             const highScores = events.map(event => {
                 try {
