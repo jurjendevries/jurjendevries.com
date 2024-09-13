@@ -149,6 +149,8 @@ MIT License
             }
         }
     </style>
+    <!-- Add this script tag in the <head> section or just before your game script -->
+    <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
 </head>
 <body>
     <header>
@@ -184,8 +186,9 @@ MIT License
         <button id="down-btn">🔽</button>
         <button id="pause-btn">⏸️</button>
     </div>
-    <script type="module">
-        import { SimplePool, generateSecretKey, getPublicKey, finalizeEvent, nip19 } from 'https://esm.sh/nostr-tools@1.17.0'
+    <!-- Replace the existing script tag with this one -->
+    <script>
+        const { SimplePool, nip19 } = window.NostrTools;
 
         const pool = new SimplePool()
         const relays = [
