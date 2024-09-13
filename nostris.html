@@ -231,8 +231,9 @@ MIT License
                 onevent(event) {
                     try {
                         const data = JSON.parse(event.content);
-                        if (data.name) {
-                            profileName = data.name;
+                        // Check for display_name first, then fallback to name
+                        profileName = data.display_name || data.name;
+                        if (profileName) {
                             displayProfileName(profileName); // Display the profile name
                             h.close(); // Close subscription after fetching the profile name
                         }
