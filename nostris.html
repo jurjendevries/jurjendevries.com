@@ -1,5 +1,7 @@
 <!--
 MIT License
+
+[License text]
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -147,8 +149,6 @@ MIT License
             }
         }
     </style>
-    <!-- Include Nostr Tools UMD Build -->
-    <script src="https://unpkg.com/nostr-tools@1.1.1/dist/nostr-tools.umd.min.js"></script>
 </head>
 <body>
     <header>
@@ -184,41 +184,20 @@ MIT License
         <button id="down-btn">🔽</button>
         <button id="pause-btn">⏸️</button>
     </div>
-    <script>
-        // Access NostrTools from the global object
-        const { relayInit, getEventHash, signEvent } = window.NostrTools;
+    <script type="module">
+        import { SimplePool, generateSecretKey, getPublicKey, finalizeEvent, nip19 } from 'https://esm.sh/nostr-tools@1.17.0'
 
-        // Define top 5 Nostr relays
+        const pool = new SimplePool()
         const relays = [
             'wss://relay.damus.io',
             'wss://relay.nostr.info',
             'wss://nostr-pub.wellorder.net',
             'wss://relay.snort.social',
             'wss://nostr-relay.wlvs.space'
-        ];
+        ]
 
-        let relayPool = [];
-        let publicKey = null;
-        let profileName = null;
-
-        // Connect to Relays
-        async function connectRelays() {
-            for (const url of relays) {
-                try {
-                    const relay = relayInit(url);
-                    relay.on('connect', () => {
-                        console.log(`Connected to ${url}`);
-                    });
-                    relay.on('error', () => {
-                        console.error(`Failed to connect to ${url}`);
-                    });
-                    await relay.connect();
-                    relayPool.push(relay);
-                } catch (error) {
-                    console.error(`Error connecting to ${url}:`, error);
-                }
-            }
-        }
+        let publicKey = null
+        let profileName = null
 
         // Login with Nostr
         async function loginWithNostr() {
@@ -242,29 +221,10 @@ MIT License
 
         // Fetch Profile Name from Nostr
         async function fetchProfileName() {
-            const filters = [{
+            const events = await pool.list(relays, [{
                 kinds: [0],
                 authors: [publicKey],
-            }];
-
-            const events = [];
-
-            for (const relay of relayPool) {
-                try {
-                    const sub = relay.sub(filters);
-                    sub.on('event', event => {
-                        events.push(event);
-                    });
-                    sub.on('eose', () => {
-                        sub.unsub();
-                    });
-                } catch (error) {
-                    console.error(`Error subscribing to relay ${relay.url}:`, error);
-                }
-            }
-
-            // Wait for events to be collected
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            }])
 
             for (const event of events) {
                 try {
@@ -288,29 +248,15 @@ MIT License
             const name = prompt("Enter your name for your Nostr profile:") || 'Anonymous';
             profileName = name;
             const event = {
-                kind: 0, // Metadata event
+                kind: 0,
                 pubkey: publicKey,
                 created_at: Math.floor(Date.now() / 1000),
                 tags: [],
                 content: JSON.stringify({ name: profileName }),
             };
-            event.id = getEventHash(event);
-            event.sig = await signEvent(event);
 
-            // Publish the event to all connected relays
-            for (const relay of relayPool) {
-                try {
-                    const pub = relay.publish(event);
-                    pub.on('ok', () => {
-                        console.log(`Profile updated on ${relay.url}`);
-                    });
-                    pub.on('failed', reason => {
-                        console.error(`Failed to update profile on ${relay.url}:`, reason);
-                    });
-                } catch (error) {
-                    console.error(`Error publishing to relay ${relay.url}:`, error);
-                }
-            }
+            const signedEvent = await window.nostr.signEvent(event);
+            await pool.publish(relays, signedEvent);
         }
 
         // Game Variables and Functions
@@ -617,30 +563,15 @@ MIT License
             }
 
             const event = {
-                kind: 30023, // Custom kind for Tetris high scores
+                kind: 30023,
                 pubkey: publicKey,
                 created_at: Math.floor(Date.now() / 1000),
                 tags: [['tetris-high-score']],
                 content: JSON.stringify({ name: profileName, score }),
             };
 
-            event.id = getEventHash(event);
-            event.sig = await signEvent(event);
-
-            // Publish the event to all connected relays
-            for (const relay of relayPool) {
-                try {
-                    const pub = relay.publish(event);
-                    pub.on('ok', () => {
-                        console.log(`High score published to ${relay.url}`);
-                    });
-                    pub.on('failed', reason => {
-                        console.error(`Failed to publish to ${relay.url}:`, reason);
-                    });
-                } catch (error) {
-                    console.error(`Error publishing to relay ${relay.url}:`, error);
-                }
-            }
+            const signedEvent = await window.nostr.signEvent(event);
+            await pool.publish(relays, signedEvent);
 
             loadHighScores();
         }
@@ -648,43 +579,19 @@ MIT License
         async function loadHighScores() {
             if (!publicKey) return;
 
-            const highScores = [];
-
-            const filters = [{
+            const events = await pool.list(relays, [{
                 kinds: [30023],
-                limit: 100,
                 '#tetris-high-score': [],
-            }];
+            }])
 
-            const events = [];
-
-            for (const relay of relayPool) {
+            const highScores = events.map(event => {
                 try {
-                    const sub = relay.sub(filters);
-                    sub.on('event', event => {
-                        events.push(event);
-                    });
-                    sub.on('eose', () => {
-                        sub.unsub();
-                    });
-                } catch (error) {
-                    console.error(`Error subscribing to relay ${relay.url}:`, error);
-                }
-            }
-
-            // Wait for events to be collected
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            for (const event of events) {
-                try {
-                    const data = JSON.parse(event.content);
-                    if (data.name && typeof data.score === 'number') {
-                        highScores.push(data);
-                    }
+                    return JSON.parse(event.content);
                 } catch (e) {
                     console.error('Failed to parse event content:', e);
+                    return null;
                 }
-            }
+            }).filter(score => score && score.name && typeof score.score === 'number');
 
             displayHighScores(highScores);
         }
@@ -718,7 +625,6 @@ MIT License
 
         // Start the game
         (async () => {
-            await connectRelays();
             playerReset();
             updateScore();
             update();
