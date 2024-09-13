@@ -224,22 +224,21 @@ MIT License
 
         // Fetch Profile Name from Nostr
         async function fetchProfileName() {
-            const events = await pool.list(relays, [{
+            const events = await pool.subscribe(relays, [{
                 kinds: [0],
                 authors: [publicKey],
-            }]);
-
-            for (const event of events) {
-                try {
-                    const data = JSON.parse(event.content);
-                    if (data.name) {
-                        profileName = data.name;
-                        break;
+            }], {
+                onevent(event) {
+                    try {
+                        const data = JSON.parse(event.content);
+                        if (data.name) {
+                            profileName = data.name;
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse profile data:', e);
                     }
-                } catch (e) {
-                    console.error('Failed to parse profile data:', e);
                 }
-            }
+            });
 
             if (!profileName) {
                 await promptForProfileName();
@@ -582,21 +581,19 @@ MIT License
         async function loadHighScores() {
             if (!publicKey) return;
 
-            const events = await pool.list(relays, [{
+            const events = await pool.subscribe(relays, [{
                 kinds: [30023],
                 '#tetris-high-score': [],
-            }]);
-
-            const highScores = events.map(event => {
-                try {
-                    return JSON.parse(event.content);
-                } catch (e) {
-                    console.error('Failed to parse event content:', e);
-                    return null;
+            }], {
+                onevent(event) {
+                    try {
+                        const scoreData = JSON.parse(event.content);
+                        displayHighScores([scoreData]);
+                    } catch (e) {
+                        console.error('Failed to parse event content:', e);
+                    }
                 }
-            }).filter(score => score && score.name && typeof score.score === 'number');
-
-            displayHighScores(highScores);
+            });
         }
 
         function displayHighScores(highScores) {
