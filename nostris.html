@@ -1,0 +1,681 @@
+<!--
+MIT License
+
+[License text]
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tetris Game with Nostr Leaderboard</title>
+    <style>
+        /* CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+
+        /* Header with Instructions */
+        header {
+            text-align: center;
+            padding: 20px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px #000;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Game Container */
+        #tetris {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        /* Canvas Styling */
+        canvas {
+            border: 4px solid #fff;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            outline: none;
+            width: 480px;
+            height: 800px;
+        }
+
+        /* Sidebar for Score and Leaderboard */
+        .sidebar {
+            margin-left: 20px;
+            max-width: 200px;
+        }
+
+        .score, .leaderboard {
+            margin-bottom: 20px;
+        }
+
+        .score h2, .leaderboard h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .score span, .leaderboard ol {
+            font-size: 1.2rem;
+        }
+
+        .leaderboard ol {
+            list-style: decimal;
+            padding-left: 20px;
+        }
+
+        .leaderboard li {
+            margin-bottom: 5px;
+        }
+
+        /* On-screen Mobile Controls */
+        .controls {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            canvas {
+                width: 360px;
+                height: 600px;
+            }
+
+            .controls {
+                display: flex;
+                justify-content: center;
+                margin-top: 20px;
+            }
+
+            .controls button {
+                background: rgba(255, 255, 255, 0.1);
+                border: 2px solid #fff;
+                color: #fff;
+                font-size: 1.5rem;
+                padding: 10px;
+                margin: 0 5px;
+                border-radius: 5px;
+                flex: 1;
+            }
+        }
+
+        /* WCAG Focus Outline */
+        canvas:focus {
+            border-color: #00ff00;
+        }
+    </style>
+    <!-- Include Nostr Tools -->
+    <script src="https://unpkg.com/nostr-tools"></script>
+</head>
+<body>
+    <header>
+        <h1>Tetris Game</h1>
+        <p>Controls:</p>
+        <p>
+            <strong>Desktop:</strong> Left/Right arrows to move, Up arrow to rotate, Down arrow to drop, <strong>P</strong> to pause.<br>
+            <strong>Mobile:</strong> Use on-screen buttons below.
+        </p>
+    </header>
+    <div id="tetris">
+        <canvas id="game" width="240" height="400" tabindex="0" aria-label="Tetris Game"></canvas>
+        <div class="sidebar">
+            <div class="score" aria-live="polite">
+                <h2>Score:</h2>
+                <span id="score">0</span>
+            </div>
+            <div class="leaderboard">
+                <h2>Leaderboard:</h2>
+                <ol id="leaderboard"></ol>
+            </div>
+            <!-- Nostr Login Button -->
+            <button id="nostr-login-btn">Login with Nostr</button>
+        </div>
+    </div>
+    <!-- Mobile Controls -->
+    <div class="controls">
+        <button id="left-btn">◀️</button>
+        <button id="rotate-btn">🔄</button>
+        <button id="right-btn">▶️</button>
+        <button id="down-btn">🔽</button>
+        <button id="pause-btn">⏸️</button>
+    </div>
+    <script>
+        // Ensure the Nostr extension is available
+        if (!window.nostr) {
+            alert('Please install a Nostr extension like Alby to use the leaderboard.');
+        }
+
+        // Import Nostr Tools
+        const { relayInit, getEventHash, signEvent } = window.NostrTools;
+
+        // Define top 5 Nostr relays
+        const relays = [
+            'wss://relay.damus.io',
+            'wss://relay.nostr.info',
+            'wss://nostr-pub.wellorder.net',
+            'wss://relay.snort.social',
+            'wss://nostr-relay.wlvs.space'
+        ];
+
+        let relayPool = [];
+        let publicKey = null;
+        let profileName = null;
+
+        async function connectRelays() {
+            for (const url of relays) {
+                const relay = relayInit(url);
+                relay.on('connect', () => {
+                    console.log(`Connected to ${url}`);
+                });
+                relay.on('error', () => {
+                    console.error(`Failed to connect to ${url}`);
+                });
+                await relay.connect();
+                relayPool.push(relay);
+            }
+        }
+
+        async function loginWithNostr() {
+            try {
+                publicKey = await window.nostr.getPublicKey();
+                await fetchProfileName();
+                alert('Logged in with Nostr successfully!');
+                loadHighScores();
+            } catch (error) {
+                console.error('Nostr login failed:', error);
+                alert('Nostr login failed. Please try again.');
+            }
+        }
+
+        document.getElementById('nostr-login-btn').addEventListener('click', loginWithNostr);
+
+        async function fetchProfileName() {
+            const filters = [{
+                kinds: [0],
+                authors: [publicKey],
+            }];
+
+            for (const relay of relayPool) {
+                const sub = relay.sub(filters);
+                sub.on('event', event => {
+                    try {
+                        const data = JSON.parse(event.content);
+                        if (data.name) {
+                            profileName = data.name;
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse profile data:', e);
+                    }
+                });
+                sub.on('eose', () => {
+                    sub.unsub();
+                    if (!profileName) {
+                        promptForProfileName();
+                    }
+                });
+            }
+        }
+
+        async function promptForProfileName() {
+            const name = prompt("Enter your name for your Nostr profile:") || 'Anonymous';
+            profileName = name;
+            const event = {
+                kind: 0, // Metadata event
+                pubkey: publicKey,
+                created_at: Math.floor(Date.now() / 1000),
+                tags: [],
+                content: JSON.stringify({ name: profileName }),
+            };
+            event.id = getEventHash(event);
+            event.sig = await window.nostr.signEvent(event);
+
+            // Publish the event to all connected relays
+            for (const relay of relayPool) {
+                const pub = relay.publish(event);
+                pub.on('ok', () => {
+                    console.log(`Profile updated on ${relay.url}`);
+                });
+                pub.on('failed', reason => {
+                    console.error(`Failed to update profile on ${relay.url}: ${reason}`);
+                });
+            }
+        }
+
+        // Game Variables and Functions
+
+        let isPaused = false;
+        let speedLevel = 1;
+
+        // Adjusted dropInterval to be dynamic based on speedLevel
+        let dropCounter = 0;
+        let dropInterval = 1000 / speedLevel;
+
+        function update(time = 0) {
+            if (!isPaused) {
+                const deltaTime = time - lastTime;
+                lastTime = time;
+
+                dropCounter += deltaTime;
+                if (dropCounter > dropInterval) {
+                    playerDrop();
+                }
+
+                draw();
+            }
+            requestAnimationFrame(update);
+        }
+
+        function playerScoreUpdated() {
+            // Increase speed every 100 points
+            speedLevel = Math.floor(player.score / 100) + 1;
+            dropInterval = 1000 / speedLevel;
+        }
+
+        function updateScore() {
+            document.getElementById('score').innerText = player.score;
+            playerScoreUpdated();
+        }
+
+        // Pause Functionality
+        function togglePause() {
+            isPaused = !isPaused;
+            if (isPaused) {
+                context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.fillStyle = '#fff';
+                context.font = '1px Arial';
+                context.fillText('PAUSED', canvas.width / 2 / 20 - 1.5, canvas.height / 2 / 20);
+            }
+        }
+
+        // Handle Keyboard and Touch Events
+        document.addEventListener('keydown', event => {
+            if (event.keyCode === 37) {
+                // Left arrow
+                playerMove(-1);
+            } else if (event.keyCode === 39) {
+                // Right arrow
+                playerMove(1);
+            } else if (event.keyCode === 40) {
+                // Down arrow
+                playerDrop();
+            } else if (event.keyCode === 38) {
+                // Up arrow
+                playerRotate(1);
+            } else if (event.keyCode === 80) {
+                // 'P' key to pause
+                togglePause();
+            }
+        });
+
+        document.getElementById('left-btn').addEventListener('touchstart', e => {
+            e.preventDefault();
+            playerMove(-1);
+        });
+        document.getElementById('right-btn').addEventListener('touchstart', e => {
+            e.preventDefault();
+            playerMove(1);
+        });
+        document.getElementById('down-btn').addEventListener('touchstart', e => {
+            e.preventDefault();
+            playerDrop();
+        });
+        document.getElementById('rotate-btn').addEventListener('touchstart', e => {
+            e.preventDefault();
+            playerRotate(1);
+        });
+        document.getElementById('pause-btn').addEventListener('touchstart', e => {
+            e.preventDefault();
+            togglePause();
+        });
+
+        // Initialize Canvas and Context
+        const canvas = document.getElementById('game');
+        const context = canvas.getContext('2d');
+        context.scale(20, 20);
+
+        // Colors with CSS3 Gradients
+        const gradientColors = [
+            null,
+            context.createLinearGradient(0, 0, 1, 1),
+            context.createLinearGradient(1, 0, 0, 1),
+            context.createLinearGradient(0, 1, 1, 0),
+            context.createLinearGradient(1, 1, 0, 0),
+            context.createLinearGradient(0, 0, 1, 0),
+            context.createLinearGradient(1, 0, 1, 1),
+            context.createLinearGradient(0, 1, 0, 0),
+        ];
+
+        // Define gradients
+        gradientColors[1].addColorStop(0, '#FF0D72');
+        gradientColors[1].addColorStop(1, '#FF8E0D');
+
+        gradientColors[2].addColorStop(0, '#0DC2FF');
+        gradientColors[2].addColorStop(1, '#0DFF72');
+
+        gradientColors[3].addColorStop(0, '#F538FF');
+        gradientColors[3].addColorStop(1, '#FF0D72');
+
+        gradientColors[4].addColorStop(0, '#FF8E0D');
+        gradientColors[4].addColorStop(1, '#FFE138');
+
+        gradientColors[5].addColorStop(0, '#FFE138');
+        gradientColors[5].addColorStop(1, '#3877FF');
+
+        gradientColors[6].addColorStop(0, '#3877FF');
+        gradientColors[6].addColorStop(1, '#0DC2FF');
+
+        gradientColors[7].addColorStop(0, '#0DC2FF');
+        gradientColors[7].addColorStop(1, '#F538FF');
+
+        // Game Functions
+        function createMatrix(w, h) {
+            const matrix = [];
+            while (h--) {
+                matrix.push(new Array(w).fill(0));
+            }
+            return matrix;
+        }
+
+        function createPiece(type) {
+            switch (type) {
+                case 'T':
+                    return [
+                        [0, 0, 0],
+                        [1, 1, 1],
+                        [0, 1, 0],
+                    ];
+                case 'O':
+                    return [
+                        [2, 2],
+                        [2, 2],
+                    ];
+                case 'L':
+                    return [
+                        [0, 3, 0],
+                        [0, 3, 0],
+                        [0, 3, 3],
+                    ];
+                case 'J':
+                    return [
+                        [0, 4, 0],
+                        [0, 4, 0],
+                        [4, 4, 0],
+                    ];
+                case 'I':
+                    return [
+                        [0, 5, 0, 0],
+                        [0, 5, 0, 0],
+                        [0, 5, 0, 0],
+                        [0, 5, 0, 0],
+                    ];
+                case 'S':
+                    return [
+                        [0, 6, 6],
+                        [6, 6, 0],
+                        [0, 0, 0],
+                    ];
+                case 'Z':
+                    return [
+                        [7, 7, 0],
+                        [0, 7, 7],
+                        [0, 0, 0],
+                    ];
+            }
+        }
+
+        function draw() {
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawMatrix(arena, { x: 0, y: 0 });
+            drawMatrix(player.matrix, player.pos);
+        }
+
+        function drawMatrix(matrix, offset) {
+            matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        context.fillStyle = gradientColors[value];
+                        context.fillRect(x + offset.x, y + offset.y, 1, 1);
+
+                        // Add CSS3 effect
+                        context.save();
+                        context.globalCompositeOperation = 'source-atop';
+                        context.shadowColor = '#fff';
+                        context.shadowBlur = 10;
+                        context.fillRect(x + offset.x, y + offset.y, 1, 1);
+                        context.restore();
+                    }
+                });
+            });
+        }
+
+        function merge(arena, player) {
+            player.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        arena[y + player.pos.y][x + player.pos.x] = value;
+                    }
+                });
+            });
+        }
+
+        function collide(arena, player) {
+            const [m, o] = [player.matrix, player.pos];
+            for (let y = 0; y < m.length; ++y) {
+                for (let x = 0; x < m[y].length; ++x) {
+                    if (
+                        m[y][x] !== 0 &&
+                        (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0
+                    ) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function playerDrop() {
+            player.pos.y++;
+            if (collide(arena, player)) {
+                player.pos.y--;
+                merge(arena, player);
+                playerReset();
+                arenaSweep();
+                updateScore();
+            }
+            dropCounter = 0;
+        }
+
+        function arenaSweep() {
+            let rowCount = 1;
+            outer: for (let y = arena.length - 1; y >= 0; --y) {
+                for (let x = 0; x < arena[y].length; ++x) {
+                    if (arena[y][x] === 0) {
+                        continue outer;
+                    }
+                }
+
+                const row = arena.splice(y, 1)[0].fill(0);
+                arena.unshift(row);
+                ++y;
+
+                player.score += rowCount * 10;
+                rowCount *= 2;
+            }
+        }
+
+        function playerMove(dir) {
+            player.pos.x += dir;
+            if (collide(arena, player)) {
+                player.pos.x -= dir;
+            }
+        }
+
+        function playerReset() {
+            const pieces = 'ILJOTSZ';
+            player.matrix = createPiece(pieces[(pieces.length * Math.random()) | 0]);
+            player.pos.y = 0;
+            player.pos.x =
+                ((arena[0].length / 2) | 0) - ((player.matrix[0].length / 2) | 0);
+            if (collide(arena, player)) {
+                updateHighScores(player.score);
+                arena.forEach(row => row.fill(0));
+                player.score = 0;
+                updateScore();
+            }
+        }
+
+        function playerRotate(dir) {
+            const pos = player.pos.x;
+            let offset = 1;
+            rotate(player.matrix, dir);
+            while (collide(arena, player)) {
+                player.pos.x += offset;
+                offset = -(offset + (offset > 0 ? 1 : -1));
+                if (offset > player.matrix[0].length) {
+                    rotate(player.matrix, -dir);
+                    player.pos.x = pos;
+                    return;
+                }
+            }
+        }
+
+        function rotate(matrix, dir) {
+            for (let y = 0; y < matrix.length; ++y) {
+                for (let x = 0; x < y; ++x) {
+                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+                }
+            }
+            if (dir > 0) {
+                matrix.forEach(row => row.reverse());
+            } else {
+                matrix.reverse();
+            }
+        }
+
+        // Nostr High Score Functions
+        async function updateHighScores(score) {
+            if (!publicKey) {
+                alert('You need to login with Nostr to submit your high score.');
+                return;
+            }
+
+            const event = {
+                kind: 30023, // Custom kind for Tetris high scores
+                pubkey: publicKey,
+                created_at: Math.floor(Date.now() / 1000),
+                tags: [['tetris-high-score']],
+                content: JSON.stringify({ name: profileName, score }),
+            };
+
+            event.id = getEventHash(event);
+            event.sig = await window.nostr.signEvent(event);
+
+            // Publish the event to all connected relays
+            for (const relay of relayPool) {
+                const pub = relay.publish(event);
+                pub.on('ok', () => {
+                    console.log(`High score published to ${relay.url}`);
+                });
+                pub.on('failed', reason => {
+                    console.error(`Failed to publish to ${relay.url}: ${reason}`);
+                });
+            }
+
+            loadHighScores();
+        }
+
+        async function loadHighScores() {
+            if (!publicKey) return;
+
+            const highScores = [];
+
+            const filters = [{
+                kinds: [30023],
+                limit: 100,
+                '#tetris-high-score': [],
+            }];
+
+            for (const relay of relayPool) {
+                const sub = relay.sub(filters);
+                sub.on('event', event => {
+                    try {
+                        const data = JSON.parse(event.content);
+                        if (data.name && typeof data.score === 'number') {
+                            highScores.push(data);
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse event content:', e);
+                    }
+                });
+                sub.on('eose', () => {
+                    sub.unsub();
+                    displayHighScores(highScores);
+                });
+            }
+        }
+
+        function displayHighScores(highScores) {
+            const leaderboard = document.getElementById('leaderboard');
+            leaderboard.innerHTML = '';
+
+            // Sort scores in descending order
+            highScores.sort((a, b) => b.score - a.score);
+
+            const topScores = highScores.slice(0, 5);
+
+            topScores.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.textContent = `#${index + 1}: ${entry.name} - ${entry.score}`;
+                leaderboard.appendChild(li);
+            });
+        }
+
+        // Initialize arena and player
+        const arena = createMatrix(12, 20);
+
+        const player = {
+            pos: { x: 0, y: 0 },
+            matrix: null,
+            score: 0,
+        };
+
+        let lastTime = 0;
+
+        // Start the game
+        (async () => {
+            await connectRelays();
+            playerReset();
+            updateScore();
+            update();
+        })();
+
+        // Accessibility: Focus on canvas
+        canvas.focus();
+    </script>
+</body>
+</html>
