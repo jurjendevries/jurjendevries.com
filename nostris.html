@@ -224,7 +224,7 @@ MIT License
 
         // Fetch Profile Name from Nostr
         async function fetchProfileName() {
-            const events = await pool.subscribe(relays, [{
+            const h = pool.subscribeMany(relays, [{
                 kinds: [0],
                 authors: [publicKey],
             }], {
@@ -233,6 +233,7 @@ MIT License
                         const data = JSON.parse(event.content);
                         if (data.name) {
                             profileName = data.name;
+                            h.close(); // Close subscription after fetching the profile name
                         }
                     } catch (e) {
                         console.error('Failed to parse profile data:', e);
@@ -240,9 +241,12 @@ MIT License
                 }
             });
 
-            if (!profileName) {
-                await promptForProfileName();
-            }
+            // Wait for a short time to allow the event to be received
+            setTimeout(() => {
+                if (!profileName) {
+                    promptForProfileName();
+                }
+            }, 5000); // Adjust timeout as necessary
         }
 
         // Prompt for Profile Name and Update Nostr Profile
@@ -581,7 +585,7 @@ MIT License
         async function loadHighScores() {
             if (!publicKey) return;
 
-            const events = await pool.subscribe(relays, [{
+            const h = pool.subscribeMany(relays, [{
                 kinds: [30023],
                 '#tetris-high-score': [],
             }], {
