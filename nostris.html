@@ -172,7 +172,7 @@ MIT License
                 <h2>Leaderboard:</h2>
                 <ol id="leaderboard"></ol>
             </div>
-            <!-- Nostr Login Button -->
+            <div id="profile-name" style="display: none;"></div> <!-- Profile name display -->
             <button id="nostr-login-btn">Login with Nostr</button>
         </div>
         <!-- Pause Overlay -->
@@ -233,6 +233,7 @@ MIT License
                         const data = JSON.parse(event.content);
                         if (data.name) {
                             profileName = data.name;
+                            displayProfileName(profileName); // Display the profile name
                             h.close(); // Close subscription after fetching the profile name
                         }
                     } catch (e) {
@@ -249,6 +250,14 @@ MIT License
             }, 5000); // Adjust timeout as necessary
         }
 
+        // Display Profile Name in the Sidebar
+        function displayProfileName(name) {
+            const profileNameElement = document.getElementById('profile-name');
+            profileNameElement.innerText = `Profile Name: ${name}`;
+            profileNameElement.style.display = 'block'; // Ensure it's visible
+            document.getElementById('nostr-login-btn').style.display = 'none'; // Hide the login button
+        }
+
         // Prompt for Profile Name and Update Nostr Profile
         async function promptForProfileName() {
             const name = prompt("Enter your name for your Nostr profile:") || 'Anonymous';
@@ -263,6 +272,7 @@ MIT License
 
             const signedEvent = await window.nostr.signEvent(event);
             await pool.publish(relays, signedEvent);
+            displayProfileName(profileName); // Display the newly set profile name
         }
 
         // Game Variables and Functions
