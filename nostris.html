@@ -231,6 +231,8 @@ MIT License
                 onevent(event) {
                     try {
                         const data = JSON.parse(event.content);
+                        console.log('Profile data retrieved:', data); // Log the retrieved profile data
+
                         // Check for display_name first, then fallback to name
                         profileName = data.display_name || data.name;
                         if (profileName) {
