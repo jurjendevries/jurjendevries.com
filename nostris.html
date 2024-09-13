@@ -1,7 +1,5 @@
 <!--
 MIT License
-
-[License text]
 -->
 
 <!DOCTYPE html>
@@ -127,7 +125,7 @@ MIT License
         }
     </style>
     <!-- Include Nostr Tools -->
-    <script src="https://unpkg.com/nostr-tools"></script>
+    <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
 </head>
 <body>
     <header>
@@ -217,24 +215,35 @@ MIT License
                 authors: [publicKey],
             }];
 
+            const events = [];
+
             for (const relay of relayPool) {
                 const sub = relay.sub(filters);
                 sub.on('event', event => {
-                    try {
-                        const data = JSON.parse(event.content);
-                        if (data.name) {
-                            profileName = data.name;
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse profile data:', e);
-                    }
+                    events.push(event);
                 });
                 sub.on('eose', () => {
                     sub.unsub();
-                    if (!profileName) {
-                        promptForProfileName();
-                    }
                 });
+            }
+
+            // Wait a bit for events to be collected
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            for (const event of events) {
+                try {
+                    const data = JSON.parse(event.content);
+                    if (data.name) {
+                        profileName = data.name;
+                        break;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse profile data:', e);
+                }
+            }
+
+            if (!profileName) {
+                await promptForProfileName();
             }
         }
 
@@ -620,23 +629,33 @@ MIT License
                 '#tetris-high-score': [],
             }];
 
+            const events = [];
+
             for (const relay of relayPool) {
                 const sub = relay.sub(filters);
                 sub.on('event', event => {
-                    try {
-                        const data = JSON.parse(event.content);
-                        if (data.name && typeof data.score === 'number') {
-                            highScores.push(data);
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse event content:', e);
-                    }
+                    events.push(event);
                 });
                 sub.on('eose', () => {
                     sub.unsub();
-                    displayHighScores(highScores);
                 });
             }
+
+            // Wait a bit for events to be collected
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            for (const event of events) {
+                try {
+                    const data = JSON.parse(event.content);
+                    if (data.name && typeof data.score === 'number') {
+                        highScores.push(data);
+                    }
+                } catch (e) {
+                    console.error('Failed to parse event content:', e);
+                }
+            }
+
+            displayHighScores(highScores);
         }
 
         function displayHighScores(highScores) {
