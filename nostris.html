@@ -1,7 +1,6 @@
 <!--
 MIT License
 -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,9 +122,30 @@ MIT License
         canvas:focus {
             border-color: #00ff00;
         }
+
+        /* Pause Overlay */
+        #pause-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 480px;
+            height: 800px;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 2rem;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            #pause-overlay {
+                width: 360px;
+                height: 600px;
+            }
+        }
     </style>
-    <!-- Include Nostr Tools -->
-    <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
 </head>
 <body>
     <header>
@@ -151,6 +171,8 @@ MIT License
             <button id="nostr-login-btn">Login with Nostr</button>
         </div>
     </div>
+    <!-- Pause Overlay -->
+    <div id="pause-overlay">PAUSED</div>
     <!-- Mobile Controls -->
     <div class="controls">
         <button id="left-btn">◀️</button>
@@ -159,14 +181,10 @@ MIT License
         <button id="down-btn">🔽</button>
         <button id="pause-btn">⏸️</button>
     </div>
-    <script>
-        // Ensure the Nostr extension is available
-        if (!window.nostr) {
-            alert('Please install a Nostr extension like Alby to use the leaderboard.');
-        }
-
-        // Import Nostr Tools
-        const { relayInit, getEventHash, signEvent } = window.NostrTools;
+    <!-- Script as Module -->
+    <script type="module">
+        // Import Nostr Tools from unpkg as ES Module
+        import { relayInit, getEventHash, signEvent } from 'https://unpkg.com/nostr-tools@1.0.0/dist/nostr-tools.esm.min.js';
 
         // Define top 5 Nostr relays
         const relays = [
@@ -181,21 +199,32 @@ MIT License
         let publicKey = null;
         let profileName = null;
 
+        // Connect to Relays
         async function connectRelays() {
             for (const url of relays) {
-                const relay = relayInit(url);
-                relay.on('connect', () => {
-                    console.log(`Connected to ${url}`);
-                });
-                relay.on('error', () => {
-                    console.error(`Failed to connect to ${url}`);
-                });
-                await relay.connect();
-                relayPool.push(relay);
+                try {
+                    const relay = relayInit(url);
+                    relay.on('connect', () => {
+                        console.log(`Connected to ${url}`);
+                    });
+                    relay.on('error', () => {
+                        console.error(`Failed to connect to ${url}`);
+                    });
+                    await relay.connect();
+                    relayPool.push(relay);
+                } catch (error) {
+                    console.error(`Error connecting to ${url}:`, error);
+                }
             }
         }
 
+        // Login with Nostr
         async function loginWithNostr() {
+            if (!window.nostr) {
+                alert('Please install a Nostr extension like Alby to use the leaderboard.');
+                return;
+            }
+
             try {
                 publicKey = await window.nostr.getPublicKey();
                 await fetchProfileName();
@@ -209,6 +238,7 @@ MIT License
 
         document.getElementById('nostr-login-btn').addEventListener('click', loginWithNostr);
 
+        // Fetch Profile Name from Nostr
         async function fetchProfileName() {
             const filters = [{
                 kinds: [0],
@@ -218,16 +248,20 @@ MIT License
             const events = [];
 
             for (const relay of relayPool) {
-                const sub = relay.sub(filters);
-                sub.on('event', event => {
-                    events.push(event);
-                });
-                sub.on('eose', () => {
-                    sub.unsub();
-                });
+                try {
+                    const sub = relay.sub(filters);
+                    sub.on('event', event => {
+                        events.push(event);
+                    });
+                    sub.on('eose', () => {
+                        sub.unsub();
+                    });
+                } catch (error) {
+                    console.error(`Error subscribing to relay ${relay.url}:`, error);
+                }
             }
 
-            // Wait a bit for events to be collected
+            // Wait for events to be collected
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             for (const event of events) {
@@ -247,6 +281,7 @@ MIT License
             }
         }
 
+        // Prompt for Profile Name and Update Nostr Profile
         async function promptForProfileName() {
             const name = prompt("Enter your name for your Nostr profile:") || 'Anonymous';
             profileName = name;
@@ -262,13 +297,17 @@ MIT License
 
             // Publish the event to all connected relays
             for (const relay of relayPool) {
-                const pub = relay.publish(event);
-                pub.on('ok', () => {
-                    console.log(`Profile updated on ${relay.url}`);
-                });
-                pub.on('failed', reason => {
-                    console.error(`Failed to update profile on ${relay.url}: ${reason}`);
-                });
+                try {
+                    const pub = relay.publish(event);
+                    pub.on('ok', () => {
+                        console.log(`Profile updated on ${relay.url}`);
+                    });
+                    pub.on('failed', reason => {
+                        console.error(`Failed to update profile on ${relay.url}:`, reason);
+                    });
+                } catch (error) {
+                    console.error(`Error publishing to relay ${relay.url}:`, error);
+                }
             }
         }
 
@@ -279,7 +318,7 @@ MIT License
 
         // Adjusted dropInterval to be dynamic based on speedLevel
         let dropCounter = 0;
-        let dropInterval = 1000 / speedLevel;
+        let dropIntervalBase = 1000; // Base interval in ms
 
         function update(time = 0) {
             if (!isPaused) {
@@ -287,7 +326,7 @@ MIT License
                 lastTime = time;
 
                 dropCounter += deltaTime;
-                if (dropCounter > dropInterval) {
+                if (dropCounter > dropInterval()) {
                     playerDrop();
                 }
 
@@ -296,10 +335,13 @@ MIT License
             requestAnimationFrame(update);
         }
 
+        function dropInterval() {
+            return dropIntervalBase / speedLevel;
+        }
+
         function playerScoreUpdated() {
             // Increase speed every 100 points
             speedLevel = Math.floor(player.score / 100) + 1;
-            dropInterval = 1000 / speedLevel;
         }
 
         function updateScore() {
@@ -310,53 +352,47 @@ MIT License
         // Pause Functionality
         function togglePause() {
             isPaused = !isPaused;
+            const pauseOverlay = document.getElementById('pause-overlay');
             if (isPaused) {
-                context.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                context.fillRect(0, 0, canvas.width, canvas.height);
-                context.fillStyle = '#fff';
-                context.font = '1px Arial';
-                context.fillText('PAUSED', canvas.width / 2 / 20 - 1.5, canvas.height / 2 / 20);
+                pauseOverlay.style.display = 'flex';
+            } else {
+                pauseOverlay.style.display = 'none';
             }
         }
 
         // Handle Keyboard and Touch Events
         document.addEventListener('keydown', event => {
-            if (event.keyCode === 37) {
+            if (event.key === 'ArrowLeft') {
                 // Left arrow
                 playerMove(-1);
-            } else if (event.keyCode === 39) {
+            } else if (event.key === 'ArrowRight') {
                 // Right arrow
                 playerMove(1);
-            } else if (event.keyCode === 40) {
+            } else if (event.key === 'ArrowDown') {
                 // Down arrow
                 playerDrop();
-            } else if (event.keyCode === 38) {
+            } else if (event.key === 'ArrowUp') {
                 // Up arrow
                 playerRotate(1);
-            } else if (event.keyCode === 80) {
+            } else if (event.key.toLowerCase() === 'p') {
                 // 'P' key to pause
                 togglePause();
             }
         });
 
-        document.getElementById('left-btn').addEventListener('touchstart', e => {
-            e.preventDefault();
+        document.getElementById('left-btn').addEventListener('click', () => {
             playerMove(-1);
         });
-        document.getElementById('right-btn').addEventListener('touchstart', e => {
-            e.preventDefault();
+        document.getElementById('right-btn').addEventListener('click', () => {
             playerMove(1);
         });
-        document.getElementById('down-btn').addEventListener('touchstart', e => {
-            e.preventDefault();
+        document.getElementById('down-btn').addEventListener('click', () => {
             playerDrop();
         });
-        document.getElementById('rotate-btn').addEventListener('touchstart', e => {
-            e.preventDefault();
+        document.getElementById('rotate-btn').addEventListener('click', () => {
             playerRotate(1);
         });
-        document.getElementById('pause-btn').addEventListener('touchstart', e => {
-            e.preventDefault();
+        document.getElementById('pause-btn').addEventListener('click', () => {
             togglePause();
         });
 
@@ -368,36 +404,21 @@ MIT License
         // Colors with CSS3 Gradients
         const gradientColors = [
             null,
-            context.createLinearGradient(0, 0, 1, 1),
-            context.createLinearGradient(1, 0, 0, 1),
-            context.createLinearGradient(0, 1, 1, 0),
-            context.createLinearGradient(1, 1, 0, 0),
-            context.createLinearGradient(0, 0, 1, 0),
-            context.createLinearGradient(1, 0, 1, 1),
-            context.createLinearGradient(0, 1, 0, 0),
+            createGradient('#FF0D72', '#FF8E0D'),
+            createGradient('#0DC2FF', '#0DFF72'),
+            createGradient('#F538FF', '#FF0D72'),
+            createGradient('#FF8E0D', '#FFE138'),
+            createGradient('#FFE138', '#3877FF'),
+            createGradient('#3877FF', '#0DC2FF'),
+            createGradient('#0DC2FF', '#F538FF'),
         ];
 
-        // Define gradients
-        gradientColors[1].addColorStop(0, '#FF0D72');
-        gradientColors[1].addColorStop(1, '#FF8E0D');
-
-        gradientColors[2].addColorStop(0, '#0DC2FF');
-        gradientColors[2].addColorStop(1, '#0DFF72');
-
-        gradientColors[3].addColorStop(0, '#F538FF');
-        gradientColors[3].addColorStop(1, '#FF0D72');
-
-        gradientColors[4].addColorStop(0, '#FF8E0D');
-        gradientColors[4].addColorStop(1, '#FFE138');
-
-        gradientColors[5].addColorStop(0, '#FFE138');
-        gradientColors[5].addColorStop(1, '#3877FF');
-
-        gradientColors[6].addColorStop(0, '#3877FF');
-        gradientColors[6].addColorStop(1, '#0DC2FF');
-
-        gradientColors[7].addColorStop(0, '#0DC2FF');
-        gradientColors[7].addColorStop(1, '#F538FF');
+        function createGradient(colorStart, colorEnd) {
+            const gradient = context.createLinearGradient(0, 0, 1, 1);
+            gradient.addColorStop(0, colorStart);
+            gradient.addColorStop(1, colorEnd);
+            return gradient;
+        }
 
         // Game Functions
         function createMatrix(w, h) {
@@ -602,17 +623,21 @@ MIT License
             };
 
             event.id = getEventHash(event);
-            event.sig = await window.nostr.signEvent(event);
+            event.sig = await signEvent(event);
 
             // Publish the event to all connected relays
             for (const relay of relayPool) {
-                const pub = relay.publish(event);
-                pub.on('ok', () => {
-                    console.log(`High score published to ${relay.url}`);
-                });
-                pub.on('failed', reason => {
-                    console.error(`Failed to publish to ${relay.url}: ${reason}`);
-                });
+                try {
+                    const pub = relay.publish(event);
+                    pub.on('ok', () => {
+                        console.log(`High score published to ${relay.url}`);
+                    });
+                    pub.on('failed', reason => {
+                        console.error(`Failed to publish to ${relay.url}:`, reason);
+                    });
+                } catch (error) {
+                    console.error(`Error publishing to relay ${relay.url}:`, error);
+                }
             }
 
             loadHighScores();
@@ -632,16 +657,20 @@ MIT License
             const events = [];
 
             for (const relay of relayPool) {
-                const sub = relay.sub(filters);
-                sub.on('event', event => {
-                    events.push(event);
-                });
-                sub.on('eose', () => {
-                    sub.unsub();
-                });
+                try {
+                    const sub = relay.sub(filters);
+                    sub.on('event', event => {
+                        events.push(event);
+                    });
+                    sub.on('eose', () => {
+                        sub.unsub();
+                    });
+                } catch (error) {
+                    console.error(`Error subscribing to relay ${relay.url}:`, error);
+                }
             }
 
-            // Wait a bit for events to be collected
+            // Wait for events to be collected
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             for (const event of events) {
