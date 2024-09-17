@@ -202,6 +202,24 @@ MIT License
         let publicKey = null;
         let profileName = null;
 
+        // Check for Nostr extension and attempt to log in automatically
+        async function checkNostrExtension() {
+            if (window.nostr) {
+                try {
+                    publicKey = await window.nostr.getPublicKey();
+                    await fetchProfileName();
+                    loadHighScores();
+                } catch (error) {
+                    console.error('Nostr extension not logged in:', error);
+                }
+            } else {
+                console.warn('Nostr extension not detected.');
+            }
+        }
+
+        // Call the function to check for the Nostr extension on page load
+        checkNostrExtension();
+
         // Login with Nostr
         async function loginWithNostr() {
             if (!window.nostr) {
