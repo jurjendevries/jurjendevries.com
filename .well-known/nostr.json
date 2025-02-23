@@ -3,6 +3,6 @@
     "jurjen" : "ffbcb7069f7aa5d6db129eb39e7d8a9789466d255a637bac1ebf8617b0574044" 
   },
   "relays": {
-    "ffbcb7069f7aa5d6db129eb39e7d8a9789466d255a637bac1ebf8617b0574044": [ "wss://pyramid.fiatjaf.com/", "wss://frysian.nostrich.casa/", "wss://inner.sebastix.social/", "wss://wot.sebastix.social/", "wss://nostr.sprovoost.nl", "wss://relay.nostr.band/" ]
+    "ffbcb7069f7aa5d6db129eb39e7d8a9789466d255a637bac1ebf8617b0574044": [ "wss://pyramid.fiatjaf.com/", "wss://frysian.nostrich.casa/", "wss://inner.sebastix.social/", "wss://nostr.sprovoost.nl", "wss://relay.nostr.band/" ]
   }
 }
